@@ -43,11 +43,11 @@ const useQuery = () => {
 
 const BookingDetails = () => {
   const [bookingData, setBookingData] = useState([]);
-  const navigate = useNavigate()
+  const navigate = useNavigate();
   const query = useQuery();
   const tourid = query.get("tourid");
-  const token = localStorage.getItem('token')
-  console.log(token)
+  const token = localStorage.getItem("token");
+  console.log(token);
   const [tour, setTour] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -364,22 +364,31 @@ const BookingDetails = () => {
               </Box>
             </Card>
           ) : (
-            <Button
-              variant="contained"
-              onClick={() => navigate("/login")}
+            <Box
               sx={{
-                padding: 2,
-                backgroundColor: "#f0f0f0",
-                borderRadius: 2,
-                color: "#333",
-                boxShadow: 3,
-                "&:hover": {
-                  backgroundColor: "#e0e0e0",
-                },
+                display: "flex",
+                justifyContent: "center",
+                marginTop: 4,
+                marginBottom:10,
               }}
             >
-              Please Login to Book
-            </Button>
+              <Button
+                variant="contained"
+                onClick={() => navigate("/login")}
+                sx={{
+                  padding: 2,
+                  backgroundColor: "#8FD14F",
+                  borderRadius: 2,
+                  color: "#333",
+                  boxShadow: 3,
+                  "&:hover": {
+                    backgroundColor: "#6EC207",
+                  },
+                }}
+              >
+                Please Login to Book
+              </Button>
+            </Box>
           )}
         </Container>
       </Box>
