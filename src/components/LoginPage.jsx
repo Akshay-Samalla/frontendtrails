@@ -5,15 +5,17 @@ import { useNavigate } from "react-router-dom";
 const LoginPage = () => {
   const [isSignup, setIsSignup] = useState(false);
   const [termsAccepted, setTermsAccepted] = useState(false); // State for terms checkbox
+  const [showTermsModal, setShowTermsModal] = useState(false); // State for modal visibility
   const [username, setUsername] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [usertype, setUsertype] = useState("user");
   const [confirmPassword, setConfirmPassword] = useState("");
   const navigate = useNavigate();
+
   useEffect(() => {
-    const termsAcceptedfromStorage = localStorage.getItem("acceptedTerms");
-    if (termsAcceptedfromStorage === "true") {
+    const termsAcceptedFromStorage = localStorage.getItem("acceptedTerms");
+    if (termsAcceptedFromStorage === "true") {
       setTermsAccepted(true);
     }
   }, []);
@@ -29,10 +31,11 @@ const LoginPage = () => {
 
   const handleSubmit = (e) => {
     e.preventDefault(); // Prevents form submission
-    if (!termsAccepted) {
+    if (!termsAccepted && isSignup) {
       alert("Please accept the terms and conditions to proceed.");
       return;
     }
+
     // Proceed with form submission if checkbox is checked
     console.log({
       username,
@@ -60,14 +63,13 @@ const LoginPage = () => {
         }
       });
     } else if (!isSignup) {
-      console.log("login");
       fetch("http://localhost:3001/login/", {
         method: "POST",
-
         headers: {
           "Content-Type": "application/json",
         },
         body: JSON.stringify({
+          username: username,
           password: password,
           usertype: usertype,
           email: email,
@@ -88,6 +90,19 @@ const LoginPage = () => {
           }
         });
     }
+  };
+
+  // Handle terms modal
+  const handleAcceptTerms = () => {
+    setTermsAccepted(true);
+    setShowTermsModal(false);
+    localStorage.setItem("acceptedTerms", "true");
+  };
+
+  const handleRejectTerms = () => {
+    setShowTermsModal(false);
+    setTermsAccepted(false);
+    localStorage.setItem("acceptedTerms", "false");
   };
 
   return (
@@ -132,7 +147,6 @@ const LoginPage = () => {
           <form onSubmit={handleSubmit}>
             <h2>{isSignup ? "Sign Up" : "Sign In"}</h2>
 
-            {/* Username input only for Sign Up */}
             {isSignup && (
               <div className="input-group">
                 <FaUser className="icon" />
@@ -176,9 +190,7 @@ const LoginPage = () => {
                 <FaUserTie className="icon" />
                 <select
                   name="usertype"
-                  onChange={(e) => {
-                    setUsertype(e.target.value);
-                  }}
+                  onChange={(e) => setUsertype(e.target.value)}
                   className="input-field select-field"
                   required
                   defaultValue="user"
@@ -204,19 +216,33 @@ const LoginPage = () => {
               </div>
             )}
 
-            {/* Terms and Conditions Checkbox */}
-            <div className="checkbox-group">
-              <input
-                type="checkbox"
-                id="terms"
-                name="terms"
-                onChange={handleCheckboxChange}
-                checked={termsAccepted}
-              />
-              <label htmlFor="terms">
-                I accept the <a href="/terms">Terms and Conditions</a>
-              </label>
-            </div>
+            {/* Terms and Conditions Checkbox (only for Sign Up) */}
+            {isSignup && (
+              <div className="checkbox-group">
+                <input
+                  type="checkbox"
+                  id="terms"
+                  name="terms"
+                  onChange={handleCheckboxChange}
+                  checked={termsAccepted}
+                />
+                <label htmlFor="terms" style={{ cursor: "pointer" }}></label>
+                <span style={{ marginLeft: "10px", color: "black" }}>
+                  I agree to the
+                  <span
+                    onClick={() => setShowTermsModal(true)}
+                    style={{
+                      color: "#000072",
+                      textDecoration: "underline",
+                      cursor: "pointer",
+                      marginLeft: "5px",
+                    }}
+                  >
+                    Terms and Conditions
+                  </span>
+                </span>
+              </div>
+            )}
 
             <button type="submit" className="submit-btn">
               {isSignup ? "Sign Up" : "Sign In"}
@@ -238,6 +264,157 @@ const LoginPage = () => {
           </div>
         </div>
       </div>
+
+      {/* Terms and Conditions Modal */}
+      {showTermsModal && (
+        <div className="terms-modal">
+          <div className="terms-modal-content">
+            <h3>Terms and Conditions</h3>
+            <div className="terms-text">
+              <p>
+                <strong>1. Introduction</strong>
+              </p>
+              <p>
+                These terms and conditions govern your use of the Gradious
+                Travels website and any bookings or reservations made through
+                the Website. By using the Website, you agree to be bound by
+                these Terms.
+              </p>
+              <p>
+                <strong>2. Bookings and Reservations</strong>
+              </p>
+              <p>
+                Bookings and reservations can be made online or offline through
+                our customer service team. A binding contract between you and
+                Gradious Travels will be formed when we receive your deposit or
+                full payment. Please note that all bookings and reservations are
+                subject to availability.
+              </p>
+              <p>
+                <strong>3. Payment Terms</strong>
+              </p>
+              <p>
+                Full payment for all services is required at the time of booking
+                unless otherwise stated. Payment can be made via credit card,
+                debit card, or any other payment method specified on our
+                website.
+              </p>
+              <p>
+                <strong>4. Cancellations and Refunds</strong>
+              </p>
+              <p>
+                Our cancellation policy varies depending on the services booked.
+                Please refer to our cancellation policy for more details.
+              </p>
+              <p>
+                <strong>5. Changes and Cancellations</strong>
+              </p>
+              <p>
+                If you need to make changes to your booking, please contact our
+                customer service team as soon as possible. Cancellations are
+                subject to our cancellation policy, which can be found on our
+                Website.
+              </p>
+              <p>
+                <strong> 6. Limitation of Liabilities</strong>
+              </p>
+
+              <p>
+                {" "}
+                Gradious Travels shall not be liable for any damages or losses
+                arising from your use of the Website or participation in our
+                tours. Our liability is limited to the amount you have paid for
+                your tour.
+              </p>
+              <p>
+                <strong>7. Customer Special Requests</strong>
+              </p>
+
+              <p>
+                {" "}
+                We will do our best to accommodate any special requests you may
+                have, but cannot guarantee that they will be met.
+              </p>
+              <p>
+                <strong> 8. Safety</strong>
+              </p>
+
+              <p>
+                {" "}
+                You are responsible for your own safety during the tour. We
+                recommend that you take out travel insurance to cover any
+                unexpected events.
+              </p>
+              <p>
+                <strong> 9. Behavior or Code of Conduct</strong>
+              </p>
+
+              <p>
+                {" "}
+                You are expected to behave in a respectful and considerate
+                manner towards other tour participants and our staff. Failure to
+                comply with our code of conduct may result in your removal from
+                the tour.
+              </p>
+              <p>
+                <strong>10. Complaints</strong>
+              </p>
+
+              <p>
+                {" "}
+                If you have any complaints or issues during the tour, please
+                contact our customer service team as soon as possible. We will
+                do our best to resolve any issues promptly and fairly.
+              </p>
+              <p>
+                <strong>11. Data Protection</strong>
+              </p>
+
+              <p>
+                {" "}
+                We collect and use your personal data in accordance with our
+                privacy policy, which can be found on our Website.
+              </p>
+              <p>
+                <strong>12. Governing Law</strong>
+              </p>
+
+              <p>
+                {" "}
+                These Terms are governed by and construed in accordance with the
+                laws of India.
+              </p>
+              <p>
+                <strong>13. Entire Agreement</strong>
+              </p>
+
+              <p>
+                {" "}
+                These Terms constitute the entire agreement between you and
+                Gradious Travels and supersede all prior or contemporaneous
+                agreements or understandings. By using the Website, you
+                acknowledge that you have read, understood, and agree to be
+                bound by these Terms.
+              </p>
+              <br></br>
+
+              <p>
+                <strong>
+                  {" "}
+                  Please note that this is just a draft and you should have a
+                  lawyer review it to ensure it complies with the laws of India.
+                </strong>
+              </p>
+            </div>
+            <button className="accept-btn" onClick={handleAcceptTerms}>
+              I Accept
+            </button>
+            <button className="reject-btn" onClick={handleRejectTerms}>
+              I Reject
+            </button>
+          </div>
+        </div>
+      )}
 
       <style jsx="true">{`
         /* Background video styling */
@@ -424,6 +601,55 @@ const LoginPage = () => {
             align-items: center;
             padding: 20px;
           }
+        }
+
+        /* Modal Styles */
+        .terms-modal {
+          position: fixed;
+          top: 0;
+          left: 0;
+          right: 0;
+          bottom: 0;
+          background-color: rgba(0, 0, 0, 0.8);
+          display: flex;
+          justify-content: center;
+          align-items: center;
+          z-index: 1000;
+        }
+
+        .terms-modal-content {
+          background-color: white;
+          padding: 20px;
+          border-radius: 8px;
+          width: 80%;
+          max-width: 600px;
+          overflow-y: auto;
+          max-height: 80%;
+        }
+
+        .terms-text {
+          max-height: 400px;
+          overflow-y: auto;
+          margin-bottom: 20px;
+        }
+
+        .accept-btn,
+        .reject-btn {
+          margin: 5px;
+          padding: 10px 15px;
+          border: none;
+          border-radius: 5px;
+          cursor: pointer;
+        }
+
+        .accept-btn {
+          background-color: #4caf50;
+          color: white;
+        }
+
+        .reject-btn {
+          background-color: #f44336;
+          color: white;
         }
       `}</style>
     </div>

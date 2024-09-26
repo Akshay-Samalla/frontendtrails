@@ -4,7 +4,6 @@ import { Link } from "react-router-dom";
 import GradiousLogo from './gradious logo.png';
 const Navbar = () => {
   const user = JSON.parse(localStorage.getItem('user'))
-  console.log(user)
   const isloggedin = user ? true : false
   return (
     <AppBar

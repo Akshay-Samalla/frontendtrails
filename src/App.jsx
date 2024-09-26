@@ -21,7 +21,7 @@ function App() {
         <Route path="/coordinator" element={<CoordinatorPage />} />
         <Route path="/login" element={<LoginPage />} />
         <Route path="/test/bk" element={<BookingDetails />} />
-        <Route path="/booking" element={<BookingDetails />} />
+        <Route path="/booking/:tourid" element={<BookingDetails />} />
         <Route path="/about" element={<About />} />
         <Route path="/contact" element={<Contact />} />
         <Route path="/terms" element={<Terms></Terms>}></Route>

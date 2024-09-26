@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import Divider from "@mui/material/Divider";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate , useParams } from "react-router-dom";
 import Footer from "./Footer";
 import {
   Container,
@@ -16,6 +16,7 @@ import {
   Box,
   TextField,
   Button,
+  Skeleton,
 } from "@mui/material";
 import Carousel from "react-material-ui-carousel";
 import BeachAccessIcon from "@mui/icons-material/BeachAccess";
@@ -37,17 +38,18 @@ const iconsMapping = {
   meditation: <SpaIcon />,
 };
 
-const useQuery = () => {
-  return new URLSearchParams(useLocation().search);
-};
+// const useQuery = () => {
+//   return new URLSearchParams(useLocation().search);
+// };
 
 const BookingDetails = () => {
   const [bookingData, setBookingData] = useState([]);
+  const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
-  const query = useQuery();
-  const tourid = query.get("tourid");
+  // const query = useQuery();
+  // const tourid = query.get("tourid");
+  const tourid = useParams().tourid
   const token = localStorage.getItem("token");
-  console.log(token);
   const [tour, setTour] = useState(null);
   const [formData, setFormData] = useState({
     name: "",
@@ -66,9 +68,11 @@ const BookingDetails = () => {
       .then((data) => {
         const tur = data.map((e) => e.details);
         setBookingData([...tur]);
+        setLoading(false);
       })
       .catch((error) => {
         console.error("Error fetching tours:", error);
+        setLoading(false);
       });
   }, []);
 
@@ -94,8 +98,75 @@ const BookingDetails = () => {
     // Add your form submission logic here
   };
 
-  if (!tour) {
-    return <Typography variant="h5">Loading........</Typography>;
+  const renderSkeleton = () => (
+    <Card sx={{ padding: 2, boxShadow: 3 }}>
+      <Skeleton variant="rectangular" width="100%" height={400} />
+      <CardContent>
+        <Skeleton variant="text" width="60%" />
+        <Skeleton variant="text" width="40%" />
+        <Grid container spacing={2}>
+          <Grid item xs={6}>
+            <Skeleton variant="text" width="80%" />
+            <Skeleton variant="text" width="80%" />
+            <Skeleton variant="text" width="80%" />
+          </Grid>
+          <Grid item xs={6}>
+            <Skeleton variant="text" width="80%" />
+            <Skeleton variant="text" width="80%" />
+            <Skeleton variant="text" width="80%" />
+          </Grid>
+        </Grid>
+        <Skeleton variant="text" width="40%" />
+        <List>
+          {Array.from(new Array(3)).map((_, index) => (
+            <ListItem key={index}>
+              <Skeleton variant="text" width="100%" />
+            </ListItem>
+          ))}
+        </List>
+        <Divider sx={{ marginY: 4 }} />
+        <Skeleton variant="text" width="40%" />
+        <Box sx={{ maxHeight: "400px", overflowY: "auto", paddingRight: 2 }}>
+          {Array.from(new Array(3)).map((_, index) => (
+            <Card key={index} sx={{ marginBottom: 3, boxShadow: 2 }}>
+              <CardContent>
+                <Grid container spacing={2}>
+                  <Grid item xs={12} md={4}>
+                    <Skeleton variant="rectangular" width="100%" height={200} />
+                  </Grid>
+                  <Grid item xs={12} md={8}>
+                    <Skeleton variant="text" width="80%" />
+                    <Skeleton variant="text" width="100%" />
+                    <Skeleton variant="text" width="60%" />
+                    <Skeleton variant="text" width="40%" />
+                  </Grid>
+                </Grid>
+              </CardContent>
+            </Card>
+          ))}
+        </Box>
+      </CardContent>
+    </Card>
+  );
+
+  if (loading || !tour) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          minHeight: "100vh",
+        }}
+      >
+        <Navbar />
+        <Box component="main" sx={{ flexGrow: 1 }}>
+          <Container maxWidth="md" sx={{ marginTop: 5 }}>
+            {renderSkeleton()}
+          </Container>
+        </Box>
+        <Footer />
+      </Box>
+    );
   }
 
   return (
@@ -103,7 +174,7 @@ const BookingDetails = () => {
       sx={{
         display: "flex",
         flexDirection: "column",
-        minHeight: "100vh", // Make the container span the full viewport height
+        minHeight: "100vh",
       }}
     >
       <Navbar />
@@ -369,7 +440,7 @@ const BookingDetails = () => {
                 display: "flex",
                 justifyContent: "center",
                 marginTop: 4,
-                marginBottom:10,
+                marginBottom: 10,
               }}
             >
               <Button

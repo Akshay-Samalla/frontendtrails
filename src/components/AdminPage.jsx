@@ -1,397 +1,838 @@
-import React, { useState, useEffect } from "react";
-import Navbar from "./Navbar";
-import Divider from "@mui/material/Divider";
-import { useLocation, useNavigate } from "react-router-dom";
-import Footer from "./Footer";
+import React, { useEffect, useState } from "react";
 import {
   Container,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  List,
-  ListItem,
-  ListItemText,
-  Chip,
-  Box,
   TextField,
   Button,
+  Typography,
+  Box,
+  MenuItem,
+  Select,
+  InputLabel,
+  FormControl,
+  IconButton,
 } from "@mui/material";
-import Carousel from "react-material-ui-carousel";
-import BeachAccessIcon from "@mui/icons-material/BeachAccess";
-import DirectionsTransitIcon from "@mui/icons-material/DirectionsTransit";
-import RestaurantIcon from "@mui/icons-material/Restaurant";
-import TempleBuddhistIcon from "@mui/icons-material/TempleBuddhist";
-import NaturePeopleIcon from "@mui/icons-material/NaturePeople";
-import WbSunnyIcon from "@mui/icons-material/WbSunny";
-import SpaIcon from "@mui/icons-material/Spa";
+import AddIcon from "@mui/icons-material/Add";
+import RemoveIcon from "@mui/icons-material/Remove";
 
-// Icons mapping
-const iconsMapping = {
-  train: <DirectionsTransitIcon />,
-  beach: <BeachAccessIcon />,
-  breakfast: <RestaurantIcon />,
-  temple: <TempleBuddhistIcon />,
-  nature: <NaturePeopleIcon />,
-  sunset: <WbSunnyIcon />,
-  meditation: <SpaIcon />,
-};
-
-const useQuery = () => {
-  return new URLSearchParams(useLocation().search);
-};
-
-const BookingDetails = () => {
-  const [bookingData, setBookingData] = useState([]);
-  const navigate = useNavigate();
-  const query = useQuery();
-  const tourid = query.get("tourid");
-  const token = localStorage.getItem("token");
-  const [tour, setTour] = useState(null);
-  const [formData, setFormData] = useState({
+const AdminPage = () => {
+  const [adminData, setAdminData] = useState({
     name: "",
     email: "",
-    phone: "",
-    count: 1,
+    password: "",
+  });
+  const [coordinatorData, setCoordinatorData] = useState({
+    name: "",
+    guide_id:'',
+    email: "",
+    password: "",
+    tour: "",
+  });
+  const [tourData, setTourData] = useState({
+    tourname: "",
+    tourid: "",
+    included: [],
+    rating: "",
+    cost: "",
+    location: "",
+    timespent: "",
+    starting_date: "",
+    starting_time: "",
+    return_time: "",
+    carousel: [""],
+    stops: [
+      { day: "", loc: "", notes: "", image: "", pros: [""], duration: "" },
+    ],
   });
 
-  // Fetch tours data
-  useEffect(() => {
-    fetch("http://localhost:3001/user/tours", {
-      method: "GET",
-      headers: { "Content-Type": "application/json" },
+  // Mock data for admins, coordinators, and tours
+  const [admins, setAdmins] = useState([
+    { name: "Admin 1", email: "admin1@example.com", password: "password1" },
+    { name: "Admin 2", email: "admin2@example.com", password: "password2" },
+  ]);
+
+  const [coordinators, setCoordinators] = useState([
+    {
+      name: "Coordinator 1",
+      email: "coordinator1@example.com",
+      password: "password1",
+      tour: "Tour A",
+    },
+    {
+      name: "Coordinator 2",
+      email: "coordinator2@example.com",
+      password: "password2",
+      tour: "Tour B",
+    },
+  ]);
+
+  const [tours, setTours] = useState([
+    {
+      tourname: "Tour A",
+      tourid: "001",
+      included: ["Breakfast", "Guide"],
+      rating: "4.5",
+      cost: "200",
+      location: "Location A",
+      timespent: "3 days",
+      starting_date: "2024-01-01",
+      starting_time: "09:00",
+      return_time: "18:00",
+      carousel: ["image1.jpg", "image2.jpg"],
+      stops: [
+        {
+          day: "Day 1",
+          loc: "Location A",
+          notes: "Nice view",
+          image: "day1.jpg",
+          pros: ["Scenic"],
+          duration: "5 hours",
+        },
+      ],
+    },
+    {
+      tourname: "Tour B",
+      tourid: "002",
+      included: ["Lunch", "Guide"],
+      rating: "4.7",
+      cost: "250",
+      location: "Location B",
+      timespent: "2 days",
+      starting_date: "2024-02-01",
+      starting_time: "08:00",
+      return_time: "19:00",
+      carousel: ["image3.jpg"],
+      stops: [
+        {
+          day: "Day 1",
+          loc: "Location B",
+          notes: "Historical site",
+          image: "day1.jpg",
+          pros: ["Cultural"],
+          duration: "4 hours",
+        },
+      ],
+    },
+  ]);
+  useEffect(()=>{
+    fetch('http://localhost:3001/user/tours' , {method: 'GET'} , {headers: {'Content-Type': 'application/json'}}).then(res => res.json()).then(data=>{
+      console.log(data)
+      const tour = data.map((tour)=> { 
+        return tour.details
+        
     })
-      .then((res) => res.json())
-      .then((data) => {
-        const tur = data.map((e) => e.details);
-        setBookingData([...tur]);
-      })
-      .catch((error) => {
-        console.error("Error fetching tours:", error);
-      });
-  }, []);
-
-  // Find and set the selected tour
-  useEffect(() => {
-    if (bookingData.length > 0) {
-      const selectedTour = bookingData.find((tour) => tour.tourid == tourid);
-      setTour(selectedTour);
+    setTours(tour);
+  })
+  fetch(
+    "http://localhost:3001/admin/coadmins",
+    { method: "GET" ,
+    
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      }
     }
-  }, [bookingData, tourid]);
-
-  const handleChange = (e) => {
+  )
+    .then((res) => res.json())
+    .then((data) => {
+      console.log(data);
+      setAdmins(data);
+    });
+    fetch('http://localhost:3001/admin/guides', 
+      {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    ).then(res => res.json()).then(data => {
+      console.log(data)
+      setCoordinators(data)
+    }
+    )
+    
+  },[])
+  const handleAdminChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prevData) => ({
+    setAdminData((prevData) => ({
       ...prevData,
       [name]: value,
     }));
   };
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    console.log("Booking Details:", formData);
-    // Add your form submission logic here
+  const handleCoordinatorChange = (e) => {
+    const { name, value } = e.target;
+    setCoordinatorData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
   };
 
-  if (!tour) {
-    return <Typography variant="h5">Loading........</Typography>;
-  }
+  const handleTourChange = (e) => {
+    const { name, value } = e.target;
+    setTourData((prevData) => ({
+      ...prevData,
+      [name]: value,
+    }));
+  };
+
+  // Carousel and Stops management functions
+  const addCarouselImage = () => {
+    setTourData((prevData) => ({
+      ...prevData,
+      carousel: [...prevData.carousel, ""],
+    }));
+  };
+
+  const removeCarouselImage = (index) => {
+    setTourData((prevData) => ({
+      ...prevData,
+      carousel: prevData.carousel.filter((_, i) => i !== index),
+    }));
+  };
+
+  const addStop = () => {
+    setTourData((prevData) => ({
+      ...prevData,
+      stops: [
+        ...prevData.stops,
+        { day: "", loc: "", notes: "", image: "", pros: [""], duration: "" },
+      ],
+    }));
+  };
+
+  const removeStop = (index) => {
+    setTourData((prevData) => ({
+      ...prevData,
+      stops: prevData.stops.filter((_, i) => i !== index),
+    }));
+  };
+
+  const handleStopChange = (index, field, value) => {
+    const updatedStops = [...tourData.stops];
+    updatedStops[index][field] = value;
+    setTourData((prevData) => ({
+      ...prevData,
+      stops: updatedStops,
+    }));
+  };
+
+  const handleAdminSubmit = (e) => {
+    e.preventDefault();
+    setAdmins((prev) => [...prev, adminData]);
+    console.log("New Admin Data:", adminData);
+    setAdminData({ name: "", email: "", password: "" }); // Reset form
+  };
+
+  const handleCoordinatorSubmit = (e) => {
+    e.preventDefault();
+    setCoordinators((prev) => [...prev, coordinatorData]);
+    console.log("New Coordinator Data:", coordinatorData);
+    setCoordinatorData({ name: "", email: "", password: "", tour: "" }); // Reset form
+  };
+
+  const handleTourSubmit = (e) => {
+    e.preventDefault();
+    setTours((prev) => [...prev, tourData]);
+    console.log("New Tour Data:", tourData);
+    setTourData({
+      tourname: "",
+      tourid: "",
+      included: [],
+      rating: "",
+      cost: "",
+      location: "",
+      timespent: "",
+      starting_date: "",
+      starting_time: "",
+      return_time: "",
+      carousel: [""],
+      stops: [
+        { day: "", loc: "", notes: "", image: "", pros: [""], duration: "" },
+      ],
+    }); // Reset form
+  };
+
+  const removeTour = (tourid) => {
+    fetch(`http://localhost:3001/admin/tour/${tourid}` , 
+      {
+        method:"DELETE" , 
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    ).then(res =>{
+      if(res.ok) {
+        alert('ok')
+      }else{
+        alert('error')
+      }
+    })
+    setTours((prev) => prev.filter((tour) => tour.tourid !== tourid));
+  };
+
+  const removeCoordinator = (id) => {
+    fetch(`http://localhost:3001/admin/guide/${id}` , 
+      {
+        method:'DELETE',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    ).then(res =>{
+      if(res.ok){
+        alert('ok')
+      }
+      else{
+        alert('error')
+      }
+    }
+    )
+    setCoordinators((prev) =>
+      prev.filter((coordinator) => coordinator.guide_id !== id),
+    );
+  };
+
+  const removeAdmin = (username) => {
+    fetch(`http://localhost:3001/admin/coadmin/${username}` ,
+      {
+        method: 'DELETE' , 
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      }
+    ).then(res =>{
+      if(res.ok){
+        alert('ok')
+      }
+      else{
+        alert('error')
+      }
+    })
+    setAdmins((prev) => prev.filter((admin) => admin.username !== username));
+  };
+
+  const populateTourData = (tour) => {
+    const newtour = {
+      tourname: tour.tourname,
+      tourid: tour.tourid,
+      included: tour.included,
+      rating:   tour.rating,
+      cost: tour.cost,
+      location: tour.location,
+      timespent: tour.timespent,
+      starting_date: tour.starting_date,
+      starting_time: tour.starting_time,
+      return_time: tour.return_time,
+      carousel: tour.carousel,
+      stops: tour.stops,
+    };
+    setTourData(newtour);
+  };
 
   return (
-    <Box
-      sx={{
-        display: "flex",
-        flexDirection: "column",
-        minHeight: "100vh", // Make the container span the full viewport height
-      }}
-    >
-      <Navbar />
+    <Container maxWidth="lg" sx={{ marginTop: 5 }}>
+      <Typography variant="h4" gutterBottom>
+        Admin Page
+      </Typography>
 
-      {/* Main content */}
-      <Box component="main" sx={{ flexGrow: 1 }}>
-        <Container maxWidth="md" sx={{ marginTop: 5 }}>
-          <Card sx={{ padding: 2, boxShadow: 3 }}>
-            <Carousel>
-              {tour.carousel.map((image, index) => (
-                <Box
-                  key={index}
-                  component="img"
-                  src={image}
-                  alt={`carousel-${index}`}
-                  sx={{
-                    width: "100%",
-                    height: "400px",
-                    objectFit: "cover",
-                    borderRadius: "5px",
-                  }}
-                />
-              ))}
-            </Carousel>
-
-            <CardContent>
-              <Typography
-                variant="h4"
-                gutterBottom
-                textAlign="center"
-                color="primary"
-              >
-                {tour.tourname}
-              </Typography>
-              <Grid container spacing={2}>
-                <Grid item xs={6}>
-                  <Typography variant="h6" color="textSecondary">
-                    Location: {tour.location}
-                  </Typography>
-                  <Typography variant="h6" color="textSecondary">
-                    Duration: {tour.timespent}
-                  </Typography>
-                  <Typography variant="h6" color="textSecondary">
-                    Rating: {tour.rating} / 10
-                  </Typography>
-                </Grid>
-                <Grid item xs={6}>
-                  <Typography variant="h5" color="primary" align="right">
-                    Cost: ₹{tour.cost}
-                  </Typography>
-                  <Typography variant="body1" align="right">
-                    Starting: {tour.starting_date}, {tour.starting_time}
-                  </Typography>
-                  <Typography variant="body1" align="right">
-                    Return: {tour.return_time}
-                  </Typography>
-                </Grid>
-              </Grid>
-
-              <Typography variant="h6" gutterBottom sx={{ marginTop: 3 }}>
-                Included:
-              </Typography>
-              <List>
-                {tour.included.map((item, index) => (
-                  <ListItem key={index}>
-                    <ListItemText primary={item} />
-                  </ListItem>
-                ))}
-              </List>
-              {/* Divider added here */}
-              <Divider sx={{ marginY: 4 }} />
-              <Box sx={{ borderBottom: "2px solid #ccc", my: 3 }} />
-              <Typography
-                variant="h5"
-                gutterBottom
-                sx={{ marginTop: 4, textAlign: "center" }}
-              >
-                Trip Schedule
-              </Typography>
-
-              <Box
-                sx={{
-                  maxHeight: "400px",
-                  overflowY: "auto",
-                  paddingRight: 2,
-                  "&::-webkit-scrollbar": {
-                    width: "8px",
-                  },
-                  "&::-webkit-scrollbar-thumb": {
-                    backgroundColor: "#ccc",
-                    borderRadius: "10px",
-                  },
-                }}
-              >
-                {tour.stops.map((day, dayIndex) => (
-                  <Box key={dayIndex} sx={{ marginTop: 4 }}>
-                    <Typography variant="h6" gutterBottom>
-                      Day {dayIndex + 1} Stops:
-                    </Typography>
-                    {Object.values(day)
-                      .flat()
-                      .map((stop, index) => (
-                        <Card
-                          key={index}
-                          sx={{ marginBottom: 3, boxShadow: 2 }}
-                        >
-                          <CardContent>
-                            <Grid container spacing={2}>
-                              <Grid item xs={12} md={4}>
-                                <Box
-                                  component="img"
-                                  src={stop.image}
-                                  alt={stop.loc}
-                                  sx={{
-                                    width: "100%",
-                                    height: "200px",
-                                    objectFit: "cover",
-                                    borderRadius: "5px",
-                                  }}
-                                />
-                              </Grid>
-                              <Grid item xs={12} md={8}>
-                                <Typography variant="h6" gutterBottom>
-                                  {stop.loc}
-                                </Typography>
-                                <Typography
-                                  variant="body1"
-                                  color="textSecondary"
-                                  paragraph
-                                >
-                                  {stop.notes}
-                                </Typography>
-                                <Typography
-                                  variant="body2"
-                                  color="textSecondary"
-                                >
-                                  Duration: {stop.duration}
-                                </Typography>
-
-                                <Typography
-                                  variant="body2"
-                                  color="textSecondary"
-                                  gutterBottom
-                                >
-                                  Pros:
-                                </Typography>
-                                <Box display="flex" flexWrap="wrap">
-                                  {stop.pros.map((pro, index) => (
-                                    <Chip
-                                      key={index}
-                                      icon={iconsMapping[pro] || null}
-                                      label={pro}
-                                      sx={{ margin: 0.5 }}
-                                      color="primary"
-                                      variant="outlined"
-                                    />
-                                  ))}
-                                </Box>
-                              </Grid>
-                            </Grid>
-                          </CardContent>
-                        </Card>
-                      ))}
-                  </Box>
-                ))}
-              </Box>
-            </CardContent>
-          </Card>
-
-          {/* Separate Booking Form Section */}
-          {token !== null ? (
-            <Card sx={{ marginTop: 4, padding: 2, boxShadow: 3 }}>
-              <Typography variant="h5" align="center">
-                Booking Information
-              </Typography>
-              <Box
-                component="form"
-                onSubmit={handleSubmit}
-                sx={{ marginTop: 3, textAlign: "center" }}
-              >
-                <TextField
-                  label="Name"
-                  name="name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                  sx={{ marginBottom: 2 }}
-                />
-                <TextField
-                  label="Email"
-                  name="email"
-                  type="email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                  sx={{ marginBottom: 2 }}
-                />
-                <TextField
-                  label="Phone"
-                  name="phone"
-                  type="tel"
-                  value={formData.phone}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                  sx={{ marginBottom: 2 }}
-                />
-                <TextField
-                  label="People Count"
-                  name="count"
-                  type="number"
-                  value={formData.count}
-                  onChange={handleChange}
-                  required
-                  fullWidth
-                  sx={{ marginBottom: 2 }}
-                />
-                <Button
-                  type="submit"
-                  variant="contained"
-                  color="primary"
-                  onClick={() => {
-                    if (!localStorage.getItem("token")) {
-                      alert("login");
-                      navigate("/login");
-                      return;
-                    }
-                    fetch(`http://localhost:3001/user/tour/${tourid}`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem(
-                          "token"
-                        )}`,
-                      },
-                      body: JSON.stringify({
-                        username: formData.name,
-                        email: formData.email,
-                        phone: formData.phone,
-                        count: formData.count,
-                        tour_id: tourid,
-                      }),
-                    })
-                      .then((res) => {
-                        if (res.ok) {
-                          alert("booking ok");
-                        }
-                      })
-                      .catch(() => {
-                        alert("error booking");
-                      });
-                  }}
-                >
-                  Book Now
-                </Button>
-              </Box>
-            </Card>
-          ) : (
-            <Box
-              sx={{ display: "flex", justifyContent: "center", marginTop: 4 }}
-            >
-              <Button
-                variant="contained"
-                onClick={() => navigate("/login")}
-                sx={{
-                  padding: 2,
-                  backgroundColor: "#f0f0f0",
-                  borderRadius: 2,
-                  color: "#333",
-                  boxShadow: 3,
-                  "&:hover": {
-                    backgroundColor: "#e0e0e0",
-                  },
-                  margin: 2,
-                }}
-              >
-                Please Login to Book
-              </Button>
-            </Box>
-          )}
-        </Container>
+      {/* Admin Creation Form */}
+      <Box
+        component="form"
+        onSubmit={handleAdminSubmit}
+        sx={{ marginBottom: 4 }}
+      >
+        <Typography variant="h6" gutterBottom>
+          Create New Admin
+        </Typography>
+        <TextField
+          label="Name"
+          name="name"
+          value={adminData.name}
+          onChange={handleAdminChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Email"
+          name="email"
+          value={adminData.email}
+          onChange={handleAdminChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Password"
+          name="password"
+          type="password"
+          value={adminData.password}
+          onChange={handleAdminChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            fetch(`http://localhost:3001/admin/coadmin`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({
+                username: adminData.name,
+                email: adminData.email,
+                password: adminData.password,
+              }),
+            })
+              .then((res) => {
+                if (res.ok) {
+                  alert("created ok");
+                }
+              })
+              .catch(() => {
+                alert("error");
+              });
+          }}
+        >
+          Create Admin
+        </Button>
       </Box>
 
-      {/* Footer */}
-      <Footer />
-    </Box>
+      {/* Coordinator Creation Form */}
+      <Box
+        component="form"
+        onSubmit={handleCoordinatorSubmit}
+        sx={{ marginBottom: 4 }}
+      >
+        <Typography variant="h6" gutterBottom>
+          Create New Coordinator
+        </Typography>
+        <TextField
+          label="Name"
+          name="name"
+          value={coordinatorData.name}
+          onChange={handleCoordinatorChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="guideid"
+          name="guide_id"
+          value={coordinatorData.guide_id}
+          onChange={handleCoordinatorChange }
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Email"
+          name="email"
+          value={coordinatorData.email}
+          onChange={handleCoordinatorChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Password"
+          name="password"
+          type="password"
+          value={coordinatorData.password}
+          onChange={handleCoordinatorChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        {/* <FormControl fullWidth sx={{ marginBottom: 2 }}>
+          <InputLabel>Tour</InputLabel>
+          <Select
+            name="tour"
+            value={coordinatorData.tour}
+            onChange={handleCoordinatorChange}
+            required
+          >
+            {tours.map((tour) => (
+              <MenuItem key={tour.tourid} value={tour.tourname}>
+                {tour.tourname}
+              </MenuItem>
+            ))}
+          </Select>
+        </FormControl> */}
+          <TextField
+          label="tour"
+          name="tour"
+          value={coordinatorData.tour}
+          onChange={handleCoordinatorChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+
+        <Button
+          type="submit"
+          variant="contained"
+          color="primary"
+          onClick={() => {
+            console.log({
+              username: coordinatorData.name,
+              email: coordinatorData.email,
+              password: coordinatorData.password,
+              guide_id: coordinatorData.guide_id,
+              tours: {
+                assigned_tours: [coordinatorData.tour],
+              },
+            });
+            fetch(`http://localhost:3001/admin/guide`, {
+              method: "POST",
+              headers: {
+                "Content-Type": "application/json",
+                Authorization: `Bearer ${localStorage.getItem("token")}`,
+              },
+              body: JSON.stringify({
+                username: coordinatorData.name,
+                email: coordinatorData.email,
+                password: coordinatorData.password,
+                guide_id: coordinatorData.guide_id,
+                tours: {
+                   assigned_tours:[coordinatorData.tour]
+                },
+              }),
+            })
+              .then((res) => {
+                if (res.ok) {
+                  alert("created ok");
+                }
+              })
+              .catch(() => {
+                alert("error");
+              });
+          }}
+        >
+          Create Coordinator
+        </Button>
+      </Box>
+
+      {/* Tour Creation Form */}
+      <Box component="form" onSubmit={handleTourSubmit}>
+        <Typography variant="h6" gutterBottom>
+          Create New Tour
+        </Typography>
+        <TextField
+          label="Tour Name"
+          name="tourname"
+          value={tourData.tourname}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Tour ID"
+          name="tourid"
+          value={tourData.tourid}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Included Items"
+          name="included"
+          value={tourData.included.join(", ")}
+          onChange={(e) =>
+            handleTourChange({
+              target: { name: "included", value: e.target.value.split(", ") },
+            })
+          }
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Rating"
+          name="rating"
+          value={tourData.rating}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Cost"
+          name="cost"
+          value={tourData.cost}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Location"
+          name="location"
+          value={tourData.location}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Time Spent"
+          name="timespent"
+          value={tourData.timespent}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Starting Date"
+          name="starting_date"
+          type="date"
+          value={tourData.starting_date}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Starting Time"
+          name="starting_time"
+          type="time"
+          value={tourData.starting_time}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+        <TextField
+          label="Return Time"
+          name="return_time"
+          type="time"
+          value={tourData.return_time}
+          onChange={handleTourChange}
+          required
+          fullWidth
+          sx={{ marginBottom: 2 }}
+        />
+
+        {/* Carousel Management */}
+        <Typography variant="h6" gutterBottom>
+          Carousel Images
+        </Typography>
+        {tourData.carousel.map((image, index) => (
+          <Box
+            key={index}
+            sx={{ display: "flex", alignItems: "center", marginBottom: 2 }}
+          >
+            <TextField
+              label={`Image URL ${index + 1}`}
+              value={image}
+              onChange={(e) => {
+                const updatedCarousel = [...tourData.carousel];
+                updatedCarousel[index] = e.target.value;
+                setTourData((prev) => ({ ...prev, carousel: updatedCarousel }));
+              }}
+              fullWidth
+              sx={{ marginRight: 1 }}
+            />
+            <IconButton onClick={() => removeCarouselImage(index)}>
+              <RemoveIcon />
+            </IconButton>
+          </Box>
+        ))}
+        <Button
+          onClick={addCarouselImage}
+          variant="outlined"
+          sx={{ marginBottom: 2 }}
+        >
+          Add Image
+        </Button>
+
+        {/* Stops Management */}
+        <Typography variant="h6" gutterBottom>
+          Stops
+        </Typography>
+        {tourData.stops.map((stop, index) => (
+          <Box key={index} sx={{ marginBottom: 2 }}>
+            <TextField
+              label="Day"
+              value={stop.day}
+              onChange={(e) => handleStopChange(index, "day", e.target.value)}
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <TextField
+              label="Location"
+              value={stop.loc}
+              onChange={(e) => handleStopChange(index, "loc", e.target.value)}
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <TextField
+              label="Notes"
+              value={stop.notes}
+              onChange={(e) => handleStopChange(index, "notes", e.target.value)}
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <TextField
+              label="Image URL"
+              value={stop.image}
+              onChange={(e) => handleStopChange(index, "image", e.target.value)}
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <TextField
+              label="Pros"
+              value={stop.pros.join(",") || ''}
+              onChange={(e) =>
+                handleStopChange(index, "pros", e.target.value.split(","))
+              }
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <TextField
+              label="Duration"
+              value={stop.duration}
+              onChange={(e) =>
+                handleStopChange(index, "duration", e.target.value)
+              }
+              fullWidth
+              sx={{ marginBottom: 1 }}
+            />
+            <IconButton onClick={() => removeStop(index)}>
+              <RemoveIcon />
+            </IconButton>
+          </Box>
+        ))}
+        <Button onClick={addStop} variant="outlined" sx={{ marginBottom: 2 }}>
+          Add Stop
+        </Button>
+
+        <Button type="submit" variant="contained" color="primary" onClick={()=>{
+          console.log(tourData)
+          fetch('http://localhost:3001/admin/tour', 
+            {
+              method:'POST' , 
+              headers: {
+                'Content-Type': 'application/json',
+                Authorization: `Bearer ${localStorage.getItem('token')}`
+              },
+              body: JSON.stringify(
+                {
+                  tour_id: tourData.tourid  , 
+                  details:  tourData
+            })}).then(res =>{
+              if(res.ok){
+                alert('create ok')
+              }
+              else{
+                alert('error')
+              }
+            })
+            
+        }}>
+          Create Tour
+        </Button>
+      </Box>
+
+      {/* Tours List */}
+      <Typography variant="h5" gutterBottom>
+        Tours
+      </Typography>
+      {tours.map((tour) => (
+        <Box
+          key={tour.tourid}
+          sx={{
+            border: "1px solid #ccc",
+            borderRadius: 2,
+            padding: 2,
+            marginBottom: 2,
+          }}
+        >
+          <Typography variant="h6">{tour.tourname}</Typography>
+          <Button
+            variant="outlined"
+            color="primary"
+            onClick={() => populateTourData(tour)}
+          >
+            Edit
+          </Button>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => removeTour(tour.tourid)}
+          >
+            Remove
+          </Button>
+        </Box>
+      ))}
+
+      {/* Admins List */}
+      <Typography variant="h5" gutterBottom>
+        Admins
+      </Typography>
+      {admins.map((admin) => (
+        <Box
+          key={admin.email}
+          sx={{
+            border: "1px solid #ccc",
+            borderRadius: 2,
+            padding: 2,
+            marginBottom: 2,
+          }}
+        >
+          <Typography variant="h6">
+            {admin.name} - {admin.email}
+          </Typography>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => removeAdmin(admin.username)}
+          >
+            Remove
+          </Button>
+        </Box>
+      ))}
+
+      {/* Coordinators List */}
+      <Typography variant="h5" gutterBottom>
+        Coordinators
+      </Typography>
+      {coordinators.map((coordinator) => (
+        <Box
+          key={coordinator.email}
+          sx={{
+            border: "1px solid #ccc",
+            borderRadius: 2,
+            padding: 2,
+            marginBottom: 2,
+          }}
+        >
+          <Typography variant="h6">
+            {coordinator.name} - {coordinator.email} - Tour: {coordinator.tour}
+          </Typography>
+          <Button
+            variant="outlined"
+            color="secondary"
+            onClick={() => removeCoordinator(coordinator.guide_id)}
+          >
+            Remove
+          </Button>
+        </Box>
+      ))}
+    </Container>
   );
 };
 
-export default BookingDetails;
+export default AdminPage;

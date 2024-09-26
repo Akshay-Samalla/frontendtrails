@@ -7,12 +7,20 @@ const HeroSection = () => {
     {
       name: "PEACE",
       description: "Find tranquility in every journey",
-      video: "https://videos.pexels.com/video-files/2635756/2635756-hd_1920_1080_30fps.mp4",
+      video:
+        "https://videos.pexels.com/video-files/2635756/2635756-hd_1920_1080_30fps.mp4",
     },
     {
       name: "PASSION",
       description: "Explore the world with unwavering passion",
-      video: "https://videos.pexels.com/video-files/3121327/3121327-uhd_2560_1440_24fps.mp4",
+      video:
+        "https://videos.pexels.com/video-files/3121327/3121327-uhd_2560_1440_24fps.mp4",
+    },
+    {
+      name: "PARDISE",
+      description: "Where every journey becomes a dream",
+      video:
+        "https://videos.pexels.com/video-files/28180180/12319995_2560_1440_60fps.mp4",
     },
   ];
 
