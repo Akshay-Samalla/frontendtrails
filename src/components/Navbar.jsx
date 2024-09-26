@@ -1,10 +1,11 @@
 import React from "react";
 import { AppBar, Toolbar, Typography, Button, Box } from "@mui/material";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import GradiousLogo from './gradious logo.png';
 const Navbar = () => {
   const user = JSON.parse(localStorage.getItem('user'))
   const isloggedin = user ? true : false
+  const navigate = useNavigate()
   return (
     <AppBar
       position="sticky" // Make navbar fixed to the top
@@ -102,9 +103,12 @@ const Navbar = () => {
                   },
                 }}
                 onClick={() => {
+                  let user = JSON.parse(localStorage.getItem("user"));
                   localStorage.removeItem("user");
                   localStorage.removeItem("token");
-
+                  if(user.usertype=== 'admin' || user.usertype === 'guide'){
+                    navigate('/')
+                  }
                   window.location.reload();
                 }}
               >

@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import Navbar from "./Navbar";
 import Divider from "@mui/material/Divider";
-import { useLocation, useNavigate , useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import Footer from "./Footer";
 import {
   Container,
@@ -17,6 +17,14 @@ import {
   TextField,
   Button,
   Skeleton,
+  Modal,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Paper,
 } from "@mui/material";
 import Carousel from "react-material-ui-carousel";
 import BeachAccessIcon from "@mui/icons-material/BeachAccess";
@@ -26,6 +34,8 @@ import TempleBuddhistIcon from "@mui/icons-material/TempleBuddhist";
 import NaturePeopleIcon from "@mui/icons-material/NaturePeople";
 import WbSunnyIcon from "@mui/icons-material/WbSunny";
 import SpaIcon from "@mui/icons-material/Spa";
+import { BsCheckCircleFill } from "react-icons/bs";
+
 
 // Icons mapping
 const iconsMapping = {
@@ -38,17 +48,12 @@ const iconsMapping = {
   meditation: <SpaIcon />,
 };
 
-// const useQuery = () => {
-//   return new URLSearchParams(useLocation().search);
-// };
-
 const BookingDetails = () => {
   const [bookingData, setBookingData] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const navigate = useNavigate();
-  // const query = useQuery();
-  // const tourid = query.get("tourid");
-  const tourid = useParams().tourid
+  const tourid = useParams().tourid;
   const token = localStorage.getItem("token");
   const [tour, setTour] = useState(null);
   const [formData, setFormData] = useState({
@@ -96,6 +101,36 @@ const BookingDetails = () => {
     e.preventDefault();
     console.log("Booking Details:", formData);
     // Add your form submission logic here
+  };
+
+  const handleBookNowClick = () => {
+    if (!localStorage.getItem("token")) {
+      alert("login");
+      navigate("/login");
+      return;
+    }
+    fetch(`http://localhost:3001/user/tour/${tourid}`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: `Bearer ${localStorage.getItem("token")}`,
+      },
+      body: JSON.stringify({
+        username: formData.name,
+        email: formData.email,
+        phone: formData.phone,
+        count: formData.count,
+        tour_id: tourid,
+      }),
+    })
+      .then((res) => {
+        if (res.ok) {
+          setIsModalOpen(true);
+        }
+      })
+      .catch(() => {
+        alert("error booking");
+      });
   };
 
   const renderSkeleton = () => (
@@ -240,6 +275,7 @@ const BookingDetails = () => {
               <List>
                 {tour.included.map((item, index) => (
                   <ListItem key={index}>
+                    <BsCheckCircleFill />
                     <ListItemText primary={item} />
                   </ListItem>
                 ))}
@@ -319,7 +355,7 @@ const BookingDetails = () => {
                                   color="textSecondary"
                                   gutterBottom
                                 >
-                                  Pros:
+                                  Known For:
                                 </Typography>
                                 <Box display="flex" flexWrap="wrap">
                                   {stop.pros.map((pro, index) => (
@@ -398,37 +434,7 @@ const BookingDetails = () => {
                   type="submit"
                   variant="contained"
                   color="primary"
-                  onClick={() => {
-                    if (!localStorage.getItem("token")) {
-                      alert("login");
-                      navigate("/login");
-                      return;
-                    }
-                    fetch(`http://localhost:3001/user/tour/${tourid}`, {
-                      method: "POST",
-                      headers: {
-                        "Content-Type": "application/json",
-                        Authorization: `Bearer ${localStorage.getItem(
-                          "token"
-                        )}`,
-                      },
-                      body: JSON.stringify({
-                        username: formData.name,
-                        email: formData.email,
-                        phone: formData.phone,
-                        count: formData.count,
-                        tour_id: tourid,
-                      }),
-                    })
-                      .then((res) => {
-                        if (res.ok) {
-                          alert("booking ok");
-                        }
-                      })
-                      .catch(() => {
-                        alert("error booking");
-                      });
-                  }}
+                  onClick={handleBookNowClick}
                 >
                   Book Now
                 </Button>
@@ -466,6 +472,75 @@ const BookingDetails = () => {
 
       {/* Footer */}
       <Footer />
+
+      {/* Modal */}
+      <Modal
+        open={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        aria-labelledby="thank-you-modal-title"
+        aria-describedby="thank-you-modal-description"
+      >
+        <Box
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: "50%",
+            transform: "translate(-50%, -50%)",
+            width: 500,
+            bgcolor: "background.paper",
+            boxShadow: 24,
+            p: 4,
+            borderRadius: 2,
+          }}
+        >
+          <Typography
+            id="thank-you-modal-title"
+            variant="h4"
+            component="h2"
+            align="center"
+            gutterBottom
+          >
+            Thank You for Your Booking!
+          </Typography>
+          <Typography
+            id="thank-you-modal-description"
+            sx={{ mt: 2, mb: 4 }}
+            align="center"
+          >
+            You will receive a confirmation email shortly with the details of
+            your booking.
+          </Typography>
+          <TableContainer component={Paper}>
+            <Table>
+              <TableHead>
+                <TableRow>
+                  <TableCell>Name</TableCell>
+                  <TableCell>Email</TableCell>
+                  <TableCell>Phone</TableCell>
+                  <TableCell>Count</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                <TableRow>
+                  <TableCell>{formData.name}</TableCell>
+                  <TableCell>{formData.email}</TableCell>
+                  <TableCell>{formData.phone}</TableCell>
+                  <TableCell>{formData.count}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
+          </TableContainer>
+          <Box sx={{ textAlign: "center", mt: 4 }}>
+            <Button
+              variant="contained"
+              color="primary"
+              onClick={() => setIsModalOpen(false)}
+            >
+              Close
+            </Button>
+          </Box>
+        </Box>
+      </Modal>
     </Box>
   );
 };
