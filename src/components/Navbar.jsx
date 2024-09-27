@@ -88,6 +88,13 @@ const Navbar = () => {
                     background: "linear-gradient(90deg, #ff4b2b, #ff416c)",
                   },
                 }}
+                onClick={()=>{
+                  if(user.usertype === 'admin'){
+                    navigate('/admin')
+                  }else if(user.usertype === 'guide'){
+                    navigate('/coordinator')
+                  }
+                }}
               >
                 {user.username}
               </Button>

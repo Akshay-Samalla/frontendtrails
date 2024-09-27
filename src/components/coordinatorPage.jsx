@@ -18,7 +18,6 @@ import {
   List,
   ListItem,
   ListItemText,
-  Skeleton, // Import Skeleton
 } from "@mui/material";
 import Carousel from "react-material-ui-carousel";
 import CloseIcon from "@mui/icons-material/Close";
@@ -30,9 +29,9 @@ const CoordinatorPage = () => {
   const [coordinators, setCoordinators] = useState([]);
   const [tours, setTours] = useState([]);
   const [bookings, setBookings] = useState([]);
-  const [selectedTour, setSelectedTour] = useState(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
+  const [selectedTour, setSelectedTour] = useState(null); // Modal state
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(null); // Error state
 
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
@@ -82,6 +81,7 @@ const CoordinatorPage = () => {
         setCoordinators(coordinatorsData || []);
         setTours(toursData?.map((tour) => tour.details) || []);
         setBookings(bookingsData || []);
+        console.log(coordinatorsData, toursData, bookingsData);
       } catch (err) {
         console.error("Error fetching data:", err);
         setError("An error occurred while fetching data.");
@@ -102,64 +102,8 @@ const CoordinatorPage = () => {
 
   const handleCloseModal = () => setSelectedTour(null);
 
-  // Skeleton loading UI
-  if (loading) {
-    return (
-      <Box sx={{ padding: 4 }}>
-        <Typography
-          variant="h4"
-          gutterBottom
-          textAlign="center"
-          color="primary"
-        >
-          Coordinator's Profile & Tours
-        </Typography>
-        <Grid container spacing={4}>
-          {[...Array(3)].map((_, index) => (
-            <Grid item xs={12} key={index}>
-              <Card sx={{ boxShadow: 3, marginBottom: 4 }}>
-                <CardContent>
-                  <Box display="flex" alignItems="center" mb={2}>
-                    <Skeleton variant="circular" width={40} height={40} />
-                    <Box ml={2}>
-                      <Skeleton variant="text" width="60%" />
-                      <Skeleton variant="text" width="80%" />
-                    </Box>
-                  </Box>
-                  <Skeleton variant="text" width="40%" />
-                </CardContent>
-              </Card>
-              <Divider sx={{ marginY: 2 }} />
-              <Typography variant="h6" color="primary">
-                Assigned Tours:
-              </Typography>
-              <Skeleton variant="text" width="50%" />
-              <Grid container spacing={4}>
-                {[...Array(2)].map((_, tourIndex) => (
-                  <Grid item xs={12} md={6} key={tourIndex}>
-                    <Card sx={{ boxShadow: 3 }}>
-                      <CardContent>
-                        <Skeleton variant="text" width="80%" />
-                        <Skeleton variant="text" width="60%" />
-                        <Skeleton variant="text" width="60%" />
-                        <Carousel>
-                          <Skeleton variant="rectangular" height={140} />
-                        </Carousel>
-                        <Skeleton variant="rectangular" height={40} />
-                      </CardContent>
-                    </Card>
-                  </Grid>
-                ))}
-              </Grid>
-            </Grid>
-          ))}
-        </Grid>
-      </Box>
-    );
-  }
-
-  // Error message
-  if (error) return <Typography color="error">{error}</Typography>;
+  if (loading) return <Typography>Loading...</Typography>; // Loading indicator
+  if (error) return <Typography color="error">{error}</Typography>; // Error message
 
   return (
     <>
@@ -180,6 +124,7 @@ const CoordinatorPage = () => {
               <Grid item xs={12} key={coordinator.guide_id}>
                 <Card sx={{ boxShadow: 3, marginBottom: 4 }}>
                   <CardContent>
+                    {/* Coordinator Details */}
                     <Box display="flex" alignItems="center" mb={2}>
                       <Avatar sx={{ mr: 2 }}>{coordinator.username[0]}</Avatar>
                       <Box>
@@ -196,6 +141,7 @@ const CoordinatorPage = () => {
 
                 <Divider sx={{ marginY: 2 }} />
 
+                {/* Tour Details */}
                 <Typography variant="h6" color="primary">
                   Assigned Tours:
                 </Typography>
@@ -213,6 +159,7 @@ const CoordinatorPage = () => {
                                 Tour: {tour.tourname} - {tour.location}
                               </Typography>
 
+                              {/* Tour Date and Time */}
                               <Typography variant="body2">
                                 <strong>Start Date:</strong>{" "}
                                 {tour?.starting_date || "N/A"}
@@ -224,6 +171,14 @@ const CoordinatorPage = () => {
                               <Typography variant="body2">
                                 <strong>Return Time:</strong>{" "}
                                 {tour?.return_time || "N/A"}
+                              </Typography>
+                              <Typography variant="body2">
+                                <strong>Starting point:</strong>{" "}
+                                {tour?.starting_point || "N/A"}
+                              </Typography>
+                              <Typography variant="body2">
+                                <strong>Return Date:</strong>{" "}
+                                {tour?.return_date || "N/A"}
                               </Typography>
 
                               <Carousel>
@@ -289,7 +244,7 @@ const CoordinatorPage = () => {
                     })
                   ) : (
                     <Typography variant="body1" color="textSecondary">
-                      No tours assigned.
+                      No assigned tours.
                     </Typography>
                   )}
                 </Grid>
@@ -298,52 +253,79 @@ const CoordinatorPage = () => {
           </Grid>
         ) : (
           <Typography variant="body1" color="textSecondary">
-            No coordinators found.
+            No coordinators available.
           </Typography>
         )}
 
-        {/* Tour Details Modal */}
-        <Dialog open={Boolean(selectedTour)} onClose={handleCloseModal}>
-          <DialogTitle>
-            Tour Details
-            <IconButton
-              aria-label="close"
-              onClick={handleCloseModal}
-              sx={{ position: "absolute", right: 8, top: 8 }}
-            >
-              <CloseIcon />
-            </IconButton>
-          </DialogTitle>
-          <DialogContent>
-            {selectedTour && (
-              <>
-                <Typography variant="h6">
-                  {selectedTour.tourname} - {selectedTour.location}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Start Date:</strong> {selectedTour.starting_date}
-                </Typography>
-                <Typography variant="body2">
-                  <strong>Return Time:</strong> {selectedTour.return_time}
-                </Typography>
-                <Carousel>
-                  {selectedTour.carousel.map((image, index) => (
-                    <CardMedia
-                      key={index}
-                      component="img"
-                      height="140"
-                      image={image}
-                      alt={`Tour image ${index + 1}`}
-                    />
+        {/* Modal for Tour Details */}
+        {selectedTour && (
+          <Dialog
+            open={Boolean(selectedTour)}
+            onClose={handleCloseModal}
+            maxWidth="md"
+            fullWidth
+          >
+            <DialogTitle>
+              Tour Details
+              <IconButton
+                aria-label="close"
+                onClick={handleCloseModal}
+                sx={{ position: "absolute", right: 8, top: 8 }}
+              >
+                <CloseIcon />
+              </IconButton>
+            </DialogTitle>
+            <DialogContent dividers>
+              <Typography variant="h6">
+                Tour: {selectedTour.tourname}
+              </Typography>
+              <Typography>Location: {selectedTour.location}</Typography>
+              <Typography>Cost: ₹{selectedTour.cost}</Typography>
+              <Typography>Rating: {selectedTour.rating}/10</Typography>
+              <Typography>Duration: {selectedTour.timespent}</Typography>
+              <Typography>Start: {selectedTour.starting_date}</Typography>
+              <Typography>Time: {selectedTour.starting_time}</Typography>
+              <Typography>Return: {selectedTour.return_time}</Typography>
+              <Typography variant="h6">Included:</Typography>
+              <List>
+                {selectedTour.included.map((item, index) => (
+                  <ListItem key={index}>
+                    <ListItemText primary={item} />
+                  </ListItem>
+                ))}
+              </List>
+              <Typography variant="h6">Stops:</Typography>
+              {selectedTour.stops.map((stopGroup, groupIndex) => (
+                <Box key={groupIndex} sx={{ marginBottom: 2 }}>
+                  {stopGroup.map((stop, stopIndex) => (
+                    <Card key={stopIndex} sx={{ marginBottom: 2 }}>
+                      <CardMedia
+                        component="img"
+                        height="140"
+                        image={stop.image}
+                        alt={stop.loc}
+                      />
+                      <CardContent>
+                        <Typography variant="h6">{stop.loc}</Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          {stop.notes}
+                        </Typography>
+                        <Typography variant="body2" color="textSecondary">
+                          Rating: {stop.rating}/10
+                        </Typography>
+                      </CardContent>
+                    </Card>
                   ))}
-                </Carousel>
-              </>
-            )}
-          </DialogContent>
-          <DialogActions>
-            <Button onClick={handleCloseModal}>Close</Button>
-          </DialogActions>
-        </Dialog>
+                </Box>
+              ))}
+            </DialogContent>
+            <DialogActions>
+              <Button autoFocus onClick={handleCloseModal}>
+                Close
+              </Button>
+            </DialogActions>
+          </Dialog>
+        )}
       </Box>
       <Footer />
     </>

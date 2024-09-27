@@ -255,6 +255,12 @@ const BookingDetails = () => {
                   <Typography variant="h6" color="textSecondary">
                     Rating: {tour.rating} / 10
                   </Typography>
+                  <Typography variant="h6" color="textSecondary">
+                    Starting Point: {tour.starting_point}
+                  </Typography>
+                  <Typography variant="h6" color="textSecondary">
+                    Rerturn date: {tour.return_date} 
+                  </Typography>
                 </Grid>
                 <Grid item xs={6}>
                   <Typography variant="h5" color="primary" align="right">
@@ -276,7 +282,7 @@ const BookingDetails = () => {
                 {tour.included.map((item, index) => (
                   <ListItem key={index}>
                     <BsCheckCircleFill />
-                    <ListItemText primary={item} />
+                    <ListItemText primary={item}  sx={{padding:1}}/>
                   </ListItem>
                 ))}
               </List>

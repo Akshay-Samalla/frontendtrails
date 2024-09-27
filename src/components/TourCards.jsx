@@ -70,7 +70,7 @@ const TourCards = () => {
         <CardContent>
           <Typography variant="h5">{tour.tourname}</Typography>
           <Typography variant="body2" color="text.secondary">
-            Duration: {tour.timespent}
+            Duration: {tour.timespent=='' ? '1' : tour.timespent} days 
           </Typography>
           <Box mt={2}>
             <Chip label={`Price: ₹${tour.cost}`} color="primary" />
